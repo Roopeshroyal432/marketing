@@ -1,7 +1,7 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Ensure the API key is treated as a string to satisfy TypeScript strict checks
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 export async function generateAutomationStrategy(businessType: string) {
   try {
@@ -24,7 +24,14 @@ export async function generateAutomationStrategy(businessType: string) {
       }
     });
 
-    return JSON.parse(response.text);
+    // Extract text safely. response.text is a getter that can return string | undefined.
+    const text = response.text;
+    
+    if (!text) {
+      throw new Error("The AI model returned an empty response. Please try again.");
+    }
+
+    return JSON.parse(text);
   } catch (error) {
     console.error("Error generating strategy:", error);
     throw error;
